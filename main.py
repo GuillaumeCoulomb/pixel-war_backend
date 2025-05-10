@@ -25,36 +25,30 @@ class UserInfo:
 
 
 class Carte:
-    keys : set[str]
-    users: dict[str, ]
-    nx: int
-    ny: int
-    data: list[list[tuple[int,int,int]]]
 
-    def __init__(self, nx: int, ny: int, timeout_nanos: int = 1000000000):
+    def __init__(self, nx: int, ny: int, timeout_nanos: int = int(1e9)):
         self.keys = set()
+        self.user_ids = set()
+        self.users = {}
         self.nx = nx
         self.ny = ny
-        self.data = [
-            [ (0,0,0) for _ in range(ny)]
-            for _ in range(nx)
-            ]
+        self.data = [[(255, 255, 255) for _ in range(ny)] for _ in range(nx)]
         self.timeout_nanos = timeout_nanos
 
     def create_new_key(self):
         key = str(uuid4())
         self.keys.add(key)
         return key
-    
+
     def is_valid_key(self, key: str):
         return key in self.keys
-    
+
     def create_new_user_id(self):
         user_id = str(uuid4())
         self.user_ids.add(user_id)
         return user_id
-    
-    def is_valid_user_id(self, user_id:str):
+
+    def is_valid_user_id(self, user_id: str):
         return user_id in self.user_ids
 
 cartes : dict[str, Carte] = {
