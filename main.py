@@ -67,28 +67,30 @@ async def preinit(nom_carte: str):
     return res
    
 
-@app.get("/api/v1/{carte}/init")
-async def init(nom_carte: str,
-                query_key: str = Query(alias="key"),
-                cookie_key: str = Cookie(alias="key")):
-    carte = cartes[nom_carte]
+@app.get("/api/v1/{nom_carte}/init")
+async def init(
+    nom_carte: str,
+    query_key: str = Query(alias="key"),
+    cookie_key: str = Cookie(alias="key")
+):
+    carte = cartes.get(nom_carte)
     if carte is None:
-        return{"error": "Je nai pas trouvé la carte."}
-    if query_key != cookie_key:
-        return {"error": "Les clés ne correspondent pas"}
-    if not carte.is_valid_key(cookie_key):
-        return{"error": "La clé n'est pas valide"}
-    
+        return {"error": "Je n'ai pas trouvé la carte."}
+    if query_key != cookie_key or not carte.is_valid_key(cookie_key):
+        return {"error": "Clé invalide ou non correspondante"}
+
     user_id = carte.create_new_user_id()
+    carte.users[user_id] = UserInfo(carte.data)
+
     res = JSONResponse({
-        "id": "user id",
+        "id": user_id,
         "nx": carte.nx,
         "ny": carte.ny,
         "data": carte.data,
-        #"timeout":carte.timeout_nanos,
     })
-    res.set_cookie("id", user_id, secure=True, samesite="none", max_ahe=3600)
+    res.set_cookie("id", user_id, secure=False, samesite="lax", max_age=3600)
     return res
+
 
 
 @app.get("/api/v1/{carte}/deltas")
