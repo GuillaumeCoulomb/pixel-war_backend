@@ -51,20 +51,21 @@ class Carte:
     def is_valid_user_id(self, user_id: str):
         return user_id in self.user_ids
 
-cartes : dict[str, Carte] = {
+cartes = {
     "0000": Carte(nx=10, ny=10),
 }
 
 @app.get("/api/v1/{nom_carte}/preinit")
 async def preinit(nom_carte: str):
-    carte = cartes[nom_carte]
-    if not carte:
-        return{"error": "Je nai pas trouvé la carte."}
-    
+    carte = cartes.get(nom_carte)
+    if carte is None:
+        return {"error": "Je n'ai pas trouvé la carte."}
+
     key = carte.create_new_key()
     res = JSONResponse({"key": key})
-    res.set_cookie("key", key, secure=True, maxe_age=360, samesite="none")
+    res.set_cookie("key", key, secure=False, max_age=3600, samesite="lax")
     return res
+   
 
 @app.get("/api/v1/{carte}/init")
 async def init(nom_carte: str,
