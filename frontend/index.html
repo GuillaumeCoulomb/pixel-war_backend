@@ -1,21 +1,18 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <title>Mini Pixel War</title>
-  <style>
-    #board { display: grid; grid-template-columns: repeat(10, 20px); }
-    .pixel {
-      width: 20px; height: 20px;
-      border: 1px solid #ccc;
-      cursor: pointer;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <title>Pixel War</title>
+    <style>
+        canvas { border: 1px solid black; }
+    </style>
 </head>
 <body>
-  <h1>Pixel War</h1>
-  <div id="board"></div>
-  <input type="color" id="colorPicker" value="#000000">
+    <h1>Pixel War</h1>
+    <input type="color" id="colorPicker" value="#ff0000">
+    <canvas id="canvas" width="300" height="300"></canvas>
+    
 </body>
+
 </html>
-<script src="/static/app.js"></script>
+<script src="/frontend/app.js"></script>

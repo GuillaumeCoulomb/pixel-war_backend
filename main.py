@@ -153,7 +153,7 @@ async def edit_pixel(nom_carte: str,
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 
-app.mount("/static", StaticFiles(directory="frontend"), name="static")
+app.mount("/frontend", StaticFiles(directory="frontend"), name="frontend")
 
 @app.get("/")
 async def root():
