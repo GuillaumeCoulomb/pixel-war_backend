@@ -47,3 +47,27 @@ async function refresh() {
     await init();
     setInterval(refresh, 2000); // Update every 2s
 })();
+
+
+canvas.addEventListener("click", async (e) => {
+    const rect = canvas.getBoundingClientRect();
+    const x = Math.floor((e.clientX - rect.left) / pixelSize);
+    const y = Math.floor((e.clientY - rect.top) / pixelSize);
+
+    const color = colorPicker.value; // e.g., "#ff0000"
+    const r = parseInt(color.slice(1, 3), 16);
+    const g = parseInt(color.slice(3, 5), 16);
+    const b = parseInt(color.slice(5, 7), 16);
+
+    const res = await fetch(`/api/v1/${nomCarte}/edit?x=${x}&y=${y}&r=${r}&g=${g}&b=${b}`, {
+        method: "POST",
+        credentials: "include"
+    });
+
+    const data = await res.json();
+    if (data.error) {
+        alert(data.error);
+    }
+
+    refresh();
+});

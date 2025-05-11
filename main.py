@@ -120,4 +120,31 @@ async def deltas(nom_carte: str,
     }
 
 
+@app.post("/api/v1/{nom_carte}/edit")
+async def edit_pixel(nom_carte: str,
+                     x: int = Query(...),
+                     y: int = Query(...),
+                     r: int = Query(...),
+                     g: int = Query(...),
+                     b: int = Query(...),
+                     cookie_user_id: str = Cookie(alias="id"),
+                     cookie_key: str = Cookie(alias="key")):
+    carte = cartes.get(nom_carte)
+    if not carte:
+        return {"status": "ignored"}
+    if not carte.is_valid_key(cookie_key):
+        return {"status": "ignored"}
+    if not carte.is_valid_user_id(cookie_user_id):
+        return {"status": "ignored"}
+
+    now = round(time.time() * 1e9)
+    user_info = carte.users[cookie_user_id]
+    if now - user_info.last_edited_time_nanos < carte.timeout_nanos:
+        return {"status": "ignored"}  # Silencieux
+
+    if 0 <= x < carte.nx and 0 <= y < carte.ny:
+        carte.data[x][y] = (r, g, b)
+        user_info.last_edited_time_nanos = now
+        return {"status": "ok"}
+    return {"status": "ignored"}
 
