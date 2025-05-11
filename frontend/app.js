@@ -30,3 +30,20 @@ function draw(data) {
         }
     }
 }
+
+async function refresh() {
+    const res = await fetch(`/api/v1/${nomCarte}/deltas?id=${userId}`, {
+        credentials: 'include'
+    });
+    const data = await res.json();
+    data.deltas.forEach(([x, y, r, g, b]) => {
+        ctx.fillStyle = `rgb(${r},${g},${b})`;
+        ctx.fillRect(x * pixelSize, y * pixelSize, pixelSize, pixelSize);
+    });
+}
+
+(async () => {
+    await preinit();
+    await init();
+    setInterval(refresh, 2000); // Update every 2s
+})();

@@ -55,67 +55,69 @@ cartes: dict[str, Carte] = {
 @app.get("/api/v1/{nom_carte}/preinit")
 async def preinit(nom_carte: str):
     carte = cartes.get(nom_carte)
-    if carte is None:
-        return {"error": "Je n'ai pas trouvé la carte."}
-
+    if not carte:
+        return {"error": "Carte introuvable"}
+    
     key = carte.create_new_key()
     res = JSONResponse({"key": key})
-    res.set_cookie("key", key, secure=False, max_age=3600, samesite="lax")
+    res.set_cookie("key", key, max_age=360, samesite="lax")
     return res
    
 
 @app.get("/api/v1/{nom_carte}/init")
-async def init(
-    nom_carte: str,
-    query_key: str = Query(alias="key"),
-    cookie_key: str = Cookie(alias="key")
-):
+async def init(nom_carte: str,
+               query_key: str = Query(alias="key"),
+               cookie_key: str = Cookie(alias="key")):
     carte = cartes.get(nom_carte)
-    if carte is None:
-        return {"error": "Je n'ai pas trouvé la carte."}
-    if query_key != cookie_key or not carte.is_valid_key(cookie_key):
-        return {"error": "Clé invalide ou non correspondante"}
+    if not carte:
+        return {"error": "Carte introuvable"}
+    if query_key != cookie_key:
+        return {"error": "Clés non concordantes"}
+    if not carte.is_valid_key(cookie_key):
+        return {"error": "Clé invalide"}
 
     user_id = carte.create_new_user_id()
     carte.users[user_id] = UserInfo(carte.data)
-
     res = JSONResponse({
         "id": user_id,
         "nx": carte.nx,
         "ny": carte.ny,
-        "data": carte.data,
+        "data": carte.data
     })
-    res.set_cookie("id", user_id, secure=False, samesite="lax", max_age=3600)
+    res.set_cookie("id", user_id, max_age=3600, samesite="lax")
     return res
 
 
 
 
 @app.get("/api/v1/{nom_carte}/deltas")
-async def get_deltas(
-    nom_carte: str,
-    query_user_id: str = Query(alias="id"),
-    cookie_key: str = Cookie(alias="key"),
-    cookie_user_id: str = Cookie(alias="id")
-):
+async def deltas(nom_carte: str,
+                 query_user_id: str = Query(alias="id"),
+                 cookie_key: str = Cookie(alias="key"),
+                 cookie_user_id: str = Cookie(alias="id")):
     carte = cartes.get(nom_carte)
-    if carte is None:
-        return {"error": "Carte non trouvée"}
+    if not carte:
+        return {"error": "Carte introuvable"}
     if not carte.is_valid_key(cookie_key):
         return {"error": "Clé invalide"}
-    if query_user_id != cookie_user_id or not carte.is_valid_user_id(cookie_user_id):
+    if query_user_id != cookie_user_id:
+        return {"error": "ID utilisateur non concordant"}
+    if not carte.is_valid_user_id(query_user_id):
         return {"error": "ID utilisateur invalide"}
 
-    user_info = carte.users[cookie_user_id]
-    deltas = []
+    user_info = carte.users[query_user_id]
+    user_carte = user_info.last_seen_map
 
-    for x in range(carte.nx):
-        for y in range(carte.ny):
-            if carte.data[x][y] != user_info.last_seen_map[x][y]:
+    deltas = []
+    for y in range(carte.ny):
+        for x in range(carte.nx):
+            if carte.data[x][y] != user_carte[x][y]:
                 deltas.append((x, y, *carte.data[x][y]))
-                user_info.last_seen_map[x][y] = carte.data[x][y]
+                user_carte[x][y] = carte.data[x][y]
 
     return {
         "deltas": deltas
     }
+
+
 
