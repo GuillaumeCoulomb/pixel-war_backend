@@ -49,6 +49,8 @@ async function refresh() {
 })();
 
 
+const colorPicker = document.getElementById("colorPicker");
+
 canvas.addEventListener("click", async (e) => {
     const rect = canvas.getBoundingClientRect();
     const x = Math.floor((e.clientX - rect.left) / pixelSize);
