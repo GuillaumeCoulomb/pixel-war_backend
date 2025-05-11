@@ -10,29 +10,25 @@ from fastapi.middleware.cors import CORSMiddleware
 app = FastAPI()
 
 app.add_middleware(CORSMiddleware,
-    allow_origins=["*", "http://localhost:8000"],
-    allow_credentials=True
-    )
-
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 class UserInfo:
-    last_edited_time_nanos : int
-    last_seen_map: list[list[tuple[int, int, int]]]
-
     def __init__(self, carte):
         self.last_seen_map = deepcopy(carte)
-        self.last_edited_time_nanos = round(time.time()) * 1000000000
-
+        self.last_edited_time_nanos = 0
 
 
 class Carte:
-
     def __init__(self, nx: int, ny: int, timeout_nanos: int = int(1e9)):
         self.keys = set()
         self.user_ids = set()
         self.users = {}
         self.nx = nx
         self.ny = ny
-        self.data = [[(255, 255, 255) for _ in range(ny)] for _ in range(nx)]
+        self.data = [[(0, 0, 0) for _ in range(ny)] for _ in range(nx)]
         self.timeout_nanos = timeout_nanos
 
     def create_new_key(self):
@@ -51,9 +47,10 @@ class Carte:
     def is_valid_user_id(self, user_id: str):
         return user_id in self.user_ids
 
-cartes = {
+cartes: dict[str, Carte] = {
     "0000": Carte(nx=10, ny=10),
 }
+
 
 @app.get("/api/v1/{nom_carte}/preinit")
 async def preinit(nom_carte: str):
