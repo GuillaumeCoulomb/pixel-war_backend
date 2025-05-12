@@ -21,6 +21,8 @@ async function init() {
     draw(data.data);
 }
 
+//mise à jour de la taille, colorie les pixels
+
 function draw(data) {
     for (let x = 0; x < nx; x++) {
         for (let y = 0; y < ny; y++) {
@@ -30,6 +32,8 @@ function draw(data) {
         }
     }
 }
+
+//actualisation en redessinant uniquement les pixels modifiés
 
 async function refresh() {
     const res = await fetch(`/api/v1/${nomCarte}/deltas?id=${userId}`, {
@@ -50,6 +54,8 @@ async function refresh() {
 
 
 const colorPicker = document.getElementById("colorPicker");
+
+// pose d'un nouveau pixel
 
 canvas.addEventListener("click", async (e) => {
     const rect = canvas.getBoundingClientRect();

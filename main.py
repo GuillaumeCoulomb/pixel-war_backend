@@ -5,7 +5,7 @@ from fastapi import Cookie, FastAPI, Query
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 
-
+# configuration de l'API
 
 app = FastAPI()
 
@@ -15,11 +15,16 @@ app.add_middleware(CORSMiddleware,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# classe userinfo qui permet d'implémenter le temps minimum entre deux nouveaux pixels d'un même utilisateur
+
 class UserInfo:
     def __init__(self, carte):
         self.last_seen_map = deepcopy(carte)
         self.last_edited_time_nanos = 0
 
+
+# classe carte qui contient les dimensions, les clés et id d'authentification des utilisateurs
 
 class Carte:
     def __init__(self, nx: int, ny: int, timeout_nanos: int = int(1e9)):
@@ -52,6 +57,8 @@ cartes: dict[str, Carte] = {
 }
 
 
+# génération de la clé et stockage dans un cookie
+
 @app.get("/api/v1/{nom_carte}/preinit")
 async def preinit(nom_carte: str):
     carte = cartes.get(nom_carte)
@@ -63,6 +70,8 @@ async def preinit(nom_carte: str):
     res.set_cookie("key", key, max_age=360, samesite="lax")
     return res
    
+
+# génération d'un identifiant
 
 @app.get("/api/v1/{nom_carte}/init")
 async def init(nom_carte: str,
@@ -88,7 +97,7 @@ async def init(nom_carte: str,
     return res
 
 
-
+# mise à jour de la carte en rafraichissant uniquement les pixels changés
 
 @app.get("/api/v1/{nom_carte}/deltas")
 async def deltas(nom_carte: str,
@@ -119,6 +128,7 @@ async def deltas(nom_carte: str,
         "deltas": deltas
     }
 
+# placement pixels et vérification temps minimum
 
 @app.post("/api/v1/{nom_carte}/edit")
 async def edit_pixel(nom_carte: str,
@@ -148,7 +158,7 @@ async def edit_pixel(nom_carte: str,
         return {"status": "ok"}
     return {"status": "ignored"}
 
-###
+# connexion avec html
 
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
